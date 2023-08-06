@@ -21,8 +21,7 @@ $(document).ready(function () {
       $('div#api_status').removeClass('available');
     }
   });
-
-  fetch('http://0.0.0.0:5001/api/v1/places_search/', {
+  fetch('http://127.0.0.1:5001/api/v1/places_search/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -31,27 +30,36 @@ $(document).ready(function () {
   })
     .then(response => response.json())
     .then(data => {
-      const section = document.querySelector('.places');
-
-      data.forEach(place => {
-        const article = document.createElement('article');
-        article.innerHTML = `
-        <div class="title_box">
-          <h2>${place.name}</h2>
-          <div class="price_by_night">$${place.price_by_night}</div>
-        </div>
-        <div class="information">
-          <div class="max_guest">${place.max_guest} Guest${place.max_guest !== 1 ? 's' : ''}</div>
-          <div class="number_rooms">${place.number_rooms} Bedroom${place.number_rooms !== 1 ? 's' : ''}</div>
-          <div class="number_bathrooms">${place.number_bathrooms} Bathroom${place.number_bathrooms !== 1 ? 's' : ''}</div>
-        </div>
-        <div class="description">${place.description}</div>
-      `;
-
-        section.appendChild(article);
-      });
+      display(data);
     })
     .catch(error => {
-      console.error('Error:', error);
+      console.log(error);
     });
+
+  const display = (places) => {
+    const section = $('section.places');
+
+    places.forEach(place => {
+      const article = $('<article></article>');
+      article.html(`
+      <div class="title_box">
+        <h2>${place.name}</h2>
+        <div class="price_by_night">$${place.price_by_night}</div>
+      </div>
+      <div class="information">
+        <div class="max_guest">${place.max_guest} Guest${place.max_guest > 1 ? 's' : ''}</div>
+        <div class="number_rooms">${place.number_rooms} Bedroom${place.number_rooms > 1 ? 's' : ''}</div>
+        <div class="number_bathrooms">${place.number_bathrooms} Bathroom${place.number_bathrooms > 1 ? 's' : ''}</div>
+      </div>
+      <div class="user">
+        <b></b>
+      </div>
+      <div class="description">
+        ${place.description}
+      </div>
+    `);
+
+      section.append(article);
+    });
+  };
 });
