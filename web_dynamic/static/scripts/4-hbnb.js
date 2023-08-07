@@ -14,15 +14,36 @@ $(document).ready(function () {
     $('.amenities h4').text(Object.values(checkedAmenities).join(', '));
   });
 
-  $.get('http://127.0.0.1:5001/api/v1/status', function (data) {
-    if (data.status === 'OK') {
-      $('div#api_status').addClass('available');
-    } else {
-      $('div#api_status').removeClass('available');
+  $.ajax({
+    url: 'http://127.0.0.1:5001/api/v1/status',
+    method: 'GET',
+    success: function (data) {
+      if (data.status === 'OK') {
+        $('div#api_status').addClass('available');
+      } else {
+        $('div#api_status').removeClass('available');
+      }
+    },
+    error: function (error) {
+      console.log(error);
     }
   });
 
-  
+  $.ajax({
+    url: 'http://127.0.0.1:5001/api/v1/places_search',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    data: JSON.stringify({}),
+    success: function (data) {
+      display(data);
+    },
+    error: function (error) {
+      console.log(error);
+    }
+  });
+
   const display = (places) => {
     const section = $('section.places');
 
@@ -48,45 +69,25 @@ $(document).ready(function () {
 
       section.append(article);
     });
+
+    $('button').click(event => {
+      const amenities = Object.keys(checkedAmenities);
+
+      $.ajax({
+        url: 'http://127.0.0.1:5001/api/v1/places_search',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        data: JSON.stringify({ amenities }),
+        success: function (data) {
+          $('section.places').html('');
+          display(data);
+        },
+        error: function (error) {
+          console.log(error);
+        }
+      });
+    });
   };
-
-  fetch('http://127.0.0.1:5001/api/v1/places_search/', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({})
-  })
-    .then(response => response.json())
-    .then(data => {
-      display(data);
-    })
-    .catch(error => {
-      console.log(error);
-    });
-
-  $('button').click(event => {
-  const amenities = Object.keys(checkedAmenities);
-
-  fetch(`http://127.0.0.1:5000/api/v1/places_search`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ amenities })
-  })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-      return response.json();
-    })
-    .then(data => {
-      $('section.places').html('');
-      displayPlaces(data);
-    })
-    .catch(error => {
-      console.log(error);
-    });
-  });
 });
